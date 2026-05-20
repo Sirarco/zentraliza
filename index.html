@@ -27,17 +27,18 @@
 
         * { box-sizing: border-box; font-family: var(--font-main); }
         html { scroll-behavior: smooth; }
-        body { margin: 0; padding: 0; background-color: var(--bg-body); color: var(--text-main); transition: 0.3s; min-width: 1000px;}
+        
+        /* CERO RESTRICCIONES DE ANCHO PARA MOBILE */
+        body { margin: 0; padding: 0; background-color: var(--bg-body); color: var(--text-main); transition: 0.3s; overflow-x: hidden; }
         h1, h2, h3, h4 { font-family: var(--font-heading); margin-top: 0; }
 
         /* =========================================
-           2. NAVEGACIÓN FLOTANTE (CAMALEÓNICA)
+           2. NAVEGACIÓN FLOTANTE
            ========================================= */
         .landing-nav { position: fixed; top: 0; width: 100%; height: 80px; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; z-index: 1000; transition: all 0.4s ease; background: transparent; }
         .landing-nav.scrolled { background: var(--bg-card); box-shadow: 0 4px 20px rgba(0,0,0,0.08); height: 70px; }
         
-        /* Letras blancas al inicio, oscuras al hacer scroll */
-        .logo { position: absolute; left: 5%; top: 50%; transform: translateY(-50%); font-family: var(--font-heading); font-size: 28px; font-weight: 900; color: #ffffff; letter-spacing: -1px; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .logo { position: absolute; left: 5%; top: 50%; transform: translateY(-50%); font-family: var(--font-heading); font-size: 28px; font-weight: 900; color: #ffffff; letter-spacing: -1px; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); z-index: 10; }
         .logo span { color: var(--primary); }
         .landing-nav.scrolled .logo { color: var(--text-main); left: 50%; transform: translate(-50%, -50%); font-size: 22px; }
 
@@ -46,18 +47,12 @@
         .landing-nav.scrolled .nav-links a { color: var(--text-main); }
         .nav-links a:hover { color: var(--primary); }
         
-        .nav-actions { display: flex; gap: 15px; align-items: center; position: absolute; right: 5%; top: 50%; transform: translateY(-50%); }
+        .nav-actions { display: flex; gap: 15px; align-items: center; position: absolute; right: 5%; top: 50%; transform: translateY(-50%); z-index: 10;}
         
-        @media (max-width: 1000px) { .nav-links { display: none; } }
-
-        /* BOTONES GLOBALES */
         button { font-family: var(--font-main); cursor: pointer; transition: all 0.3s ease; border-radius: 8px; font-weight: 600; }
-        
-        /* Botón Modo Oscuro Camaleónico */
         .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.4); color: #ffffff; padding: 8px 15px; }
         .landing-nav.scrolled .btn-outline { border: 1px solid var(--border); color: var(--text-main); }
-        
-        .btn-primary { background: var(--accent); color: #1E293B; border: none; padding: 12px 24px; }
+        .btn-primary { background: var(--accent); color: #1E293B; border: none; padding: 12px 24px; white-space: nowrap; }
         .btn-primary:hover { background: #d97706; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2); }
 
         /* =========================================
@@ -68,49 +63,50 @@
         .section-subtitle { font-size: 18px; color: var(--text-muted); max-width: 700px; margin: 0 auto 50px auto; line-height: 1.6; }
 
         /* HERO */
-        .hero { background: linear-gradient(135deg, #0F172A 0%, #1e293b 100%); color: #F8FAFC; text-align: center; padding: 160px 20px 100px 20px; }
+        .hero { background: linear-gradient(135deg, #0F172A 0%, #1e293b 100%); color: #F8FAFC; text-align: center; padding: 180px 20px 120px 20px; }
         .hero h1 { font-size: 64px; font-weight: 900; margin: 0 0 20px 0; letter-spacing: -1.5px; line-height: 1.1; }
         .hero h1 span { color: var(--primary); }
         .hero p { font-size: 20px; color: #94a3b8; max-width: 750px; margin: 0 auto 40px auto; line-height: 1.6; }
 
         /* SOLUCIONES (FEATURES) */
         .features-wrapper { background: var(--bg-body); padding-bottom: 40px; }
-        .features { display: flex; justify-content: center; gap: 30px; }
-        .feature-card { background: var(--bg-card); padding: 40px 30px; border-radius: 12px; border: 1px solid var(--border); width: 32%; transition: all 0.3s ease; cursor: pointer; position: relative; overflow: hidden; }
+        .features { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .feature-card { background: var(--bg-card); padding: 40px 30px; border-radius: 12px; border: 1px solid var(--border); width: calc(33.333% - 20px); transition: all 0.3s ease; cursor: pointer; position: relative; overflow: hidden; }
         .feature-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: var(--primary); transform: scaleX(0); transition: 0.3s; transform-origin: left; }
         .feature-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         .feature-card:hover::before { transform: scaleX(1); }
         .feature-card.active { border-color: var(--primary); box-shadow: 0 10px 30px rgba(13, 148, 136, 0.1); }
-        
         .feature-card .icon { font-size: 48px; margin-bottom: 20px; display: inline-block; }
         .feature-card h3 { font-size: 22px; color: var(--text-main); margin-bottom: 15px; }
-        .feature-card p { color: var(--text-muted); line-height: 1.6; font-size: 15px; }
+        .feature-card p { color: var(--text-muted); line-height: 1.6; font-size: 15px; margin: 0; }
 
         /* =========================================
            4. SIMULADORES EXPANDIBLES
            ========================================= */
         #simulator-container { max-height: 0; overflow: hidden; transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s; opacity: 0; margin-top: 10px; max-width: 1200px; margin-left: auto; margin-right: auto;}
-        #simulator-container.expanded { max-height: 600px; opacity: 1; margin-bottom: 60px; }
+        #simulator-container.expanded { max-height: 800px; opacity: 1; margin-bottom: 60px; }
         
         .sim-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.03); display: none; }
         .sim-box.active { display: block; animation: fadeIn 0.5s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Mini-Dashboard */
+        /* Mock UI */
         .mock-dash { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
         .mock-kpi { background: var(--bg-body); padding: 20px; border-radius: 8px; border-left: 4px solid var(--primary); text-align: left; }
         .mock-kpi h4 { color: var(--text-muted); font-size: 13px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;}
         .mock-kpi .val { font-size: 32px; font-weight: 800; color: var(--text-main); font-family: var(--font-heading); }
         
-        /* Mini-Gráfico */
         .mock-chart { height: 200px; display: flex; align-items: flex-end; justify-content: space-around; padding-top: 20px; border-bottom: 2px solid var(--border); border-left: 2px solid var(--border); padding-left: 10px;}
         .mock-bar { width: 12%; background: var(--primary); border-radius: 4px 4px 0 0; position: relative; transition: 1s ease-out; height: 0; display: flex; justify-content: center; }
         .mock-bar span { position: absolute; top: -25px; font-weight: bold; font-size: 13px; color: var(--text-muted); }
 
-        /* Mini-Bitácora */
         .mock-bitacora { display: flex; flex-direction: column; gap: 15px; text-align: left; }
         .mock-item { background: var(--bg-body); padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent); display: flex; justify-content: space-between; align-items: center;}
         
+        /* Formularios Simulador */
+        .sim-controls { display: flex; gap: 10px; margin-bottom: 20px; }
+        .sim-controls select, .sim-controls input { padding: 10px; border: 1px solid var(--border); border-radius: 6px; background-color: var(--bg-body); color: var(--text-main); font-size: 14px; outline: none;}
+
         /* =========================================
            5. QUIÉNES SOMOS & VALORES
            ========================================= */
@@ -145,16 +141,50 @@
            7. MODAL DE LOGIN
            ========================================= */
         #login-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(8px); }
-        .login-box { background: var(--bg-card); padding: 50px 40px; border-radius: 12px; text-align: center; width: 420px; position: relative; border: 1px solid var(--border); box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
-        
-        .close-btn { position: absolute; top: 15px; right: 15px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 26px; cursor: pointer; color: var(--text-muted); border: none; background: transparent; border-radius: 50%; transition: 0.2s; }
+        .login-box { background: var(--bg-card); padding: 50px 40px; border-radius: 12px; text-align: center; width: 90%; max-width: 420px; position: relative; border: 1px solid var(--border); box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
+        .close-btn { position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 26px; cursor: pointer; color: var(--text-muted); border: none; background: transparent; border-radius: 50%; transition: 0.2s; }
         .close-btn:hover { color: var(--danger); background: rgba(239, 68, 68, 0.1); }
-        
         .login-box input { width: 100%; padding: 14px; margin: 8px 0 24px 0; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-body); color: var(--text-main); font-size: 16px; outline: none; transition: 0.3s; }
         .login-box input:focus { border-color: var(--primary); }
         .btn-full { width: 100%; padding: 14px; font-size: 16px; background: var(--primary); color: white; border: none; }
         .btn-full:hover { background: #0f766e; }
 
+        /* =========================================
+           8. RESPONSIVE DESIGN (MOBILE FIRST FIXES)
+           ========================================= */
+        @media (max-width: 900px) {
+            /* Hero adjustments */
+            .hero { padding: 140px 20px 80px 20px; }
+            .hero h1 { font-size: 42px; }
+            .hero p { font-size: 16px; }
+            
+            /* Navbar adjustments */
+            .nav-links { display: none; }
+            .logo { left: 5%; font-size: 24px; }
+            .landing-nav.scrolled .logo { left: 5%; transform: translateY(-50%); } /* Stop centering on mobile */
+            .btn-primary { padding: 10px 15px; font-size: 14px; }
+            
+            /* Grids to Stack */
+            .features { flex-direction: column; align-items: center; }
+            .feature-card { width: 100%; max-width: 400px; }
+            #valores .grid-3 { grid-template-columns: 1fr; }
+            .footer-grid { grid-template-columns: 1fr; text-align: center; gap: 30px; }
+            
+            /* Section Texts */
+            .section-title { font-size: 28px; }
+            .section-container { padding: 60px 5%; }
+            .text-block p { font-size: 16px; }
+            .cta-final h2 { font-size: 32px; }
+            
+            /* Simulators Fixes */
+            .sim-box { padding: 25px 20px; }
+            .mock-dash { grid-template-columns: 1fr; gap: 15px;}
+            .sim-controls { flex-direction: column; }
+            .sim-controls select, .sim-controls input, .sim-controls button { width: 100% !important; }
+            .mock-item { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .mock-chart { height: 160px; }
+            #simulator-container.expanded { max-height: 1000px; }
+        }
     </style>
 </head>
 <body>
@@ -168,7 +198,7 @@
         <div class="logo" id="logo-header">Zentraliza<span>.</span></div>
         
         <div class="nav-actions">
-            <button class="btn-outline" onclick="toggleModoOscuro()">🌙</button>
+            <button class="btn-outline" onclick="toggleModoOscuro()" title="Modo Oscuro">🌙</button>
             <button class="btn-primary" onclick="abrirModal()">Acceso Admin</button>
         </div>
     </nav>
@@ -176,7 +206,7 @@
     <header class="hero">
         <h1>Control total en un <span>solo lugar</span>.</h1>
         <p>Empresa líder en desarrollo de aplicaciones de productividad, análisis de datos profundos y dashboards de control operativo para equipos de alto rendimiento B2B.</p>
-        <button class="btn-primary" onclick="document.getElementById('soluciones').scrollIntoView();" style="font-size: 18px; padding: 16px 32px;">Descubre cómo funciona</button>
+        <button class="btn-primary" onclick="document.getElementById('soluciones').scrollIntoView();" style="font-size: 16px; padding: 14px 28px;">Descubre cómo funciona</button>
     </header>
 
     <section id="soluciones" class="section-container features-wrapper">
@@ -203,7 +233,7 @@
 
         <div id="simulator-container">
             <div id="sim-datos" class="sim-box">
-                <h3 style="text-align: left; color: var(--primary);">📊 Visualizador de Rendimiento Q3 (Simulación)</h3>
+                <h3 style="text-align: left; color: var(--primary);">📊 Visualizador de Rendimiento Q3</h3>
                 <div class="mock-chart">
                     <div class="mock-bar" style="height: 40%;"><span>40%</span></div>
                     <div class="mock-bar" style="height: 65%;"><span>65%</span></div>
@@ -211,12 +241,12 @@
                     <div class="mock-bar" style="height: 90%; background: var(--accent);"><span>90%</span></div>
                     <div class="mock-bar" style="height: 75%;"><span>75%</span></div>
                 </div>
-                <p style="text-align: left; color: var(--text-muted); font-size: 13px; margin-top: 15px;">* Los gráficos interactivos permiten identificar picos de producción e incidencias rápidamente.</p>
+                <p style="text-align: left; color: var(--text-muted); font-size: 13px; margin-top: 15px;">* Gráficos interactivos responsivos adaptables a cualquier dispositivo móvil.</p>
             </div>
 
             <div id="sim-apps" class="sim-box">
-                <h3 style="text-align: left; color: var(--primary);">📋 Portal de Auditoría de Calidad (Mockup)</h3>
-                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <h3 style="text-align: left; color: var(--primary);">📋 Portal de Auditoría (Mockup)</h3>
+                <div class="sim-controls">
                     <select style="width: 30%;"><option>Aprobado</option><option>Rechazado</option></select>
                     <input type="text" placeholder="Observación del auditor..." style="width: 50%;">
                     <button class="btn-primary" style="width: 20%;" onclick="alert('Demostración UI: Registro guardado en la nube.')">Ingresar</button>
@@ -234,7 +264,7 @@
             </div>
 
             <div id="sim-dash" class="sim-box">
-                <h3 style="text-align: left; color: var(--primary);">⚡ Centro de Control en Vivo (Simulación)</h3>
+                <h3 style="text-align: left; color: var(--primary);">⚡ Centro de Control en Vivo</h3>
                 <div class="mock-dash">
                     <div class="mock-kpi">
                         <h4>SLA Global</h4>
@@ -245,7 +275,7 @@
                         <div class="val" style="color: var(--danger);">02</div>
                     </div>
                     <div class="mock-kpi">
-                        <h4>Ejecutivos Conectados</h4>
+                        <h4>Ejecutivos Activos</h4>
                         <div class="val">14 / 17</div>
                     </div>
                 </div>
@@ -284,7 +314,7 @@
     <section class="cta-final">
         <h2>¿Listo para optimizar tu operación?</h2>
         <p style="font-size: 18px; opacity: 0.9; margin-bottom: 40px;">Centraliza la información, empodera a tu equipo y escala sin límites.</p>
-        <button id="btn-cta-bottom" class="btn-primary" style="font-size: 20px; padding: 18px 40px;" onclick="abrirModal()">Comienza tu transformación</button>
+        <button id="btn-cta-bottom" class="btn-primary" style="font-size: 18px; padding: 16px 36px;" onclick="abrirModal()">Comienza tu transformación</button>
     </section>
 
     <footer class="footer">
@@ -362,7 +392,7 @@
                 const barras = document.querySelectorAll('.mock-bar');
                 barras.forEach(b => { let h = b.style.height; b.style.height = '0'; setTimeout(()=> b.style.height = h, 100); });
             }
-            setTimeout(() => contenedor.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 300);
+            setTimeout(() => contenedor.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
         }
 
         window.addEventListener('scroll', () => {
