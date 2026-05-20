@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zentraliza - Soluciones de Productividad y Datos</title>
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%230D9488%22/><text x=%2250%25%22 y=%2252%25%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-weight=%22900%22 font-size=%2265%22 fill=%22%23ffffff%22>Z</text></svg>">
+    
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
     
@@ -28,27 +31,32 @@
         h1, h2, h3, h4 { font-family: var(--font-heading); margin-top: 0; }
 
         /* =========================================
-           2. NAVEGACIÓN FLOTANTE (STICKY & LOGO ANIMADO)
+           2. NAVEGACIÓN FLOTANTE (CAMALEÓNICA)
            ========================================= */
         .landing-nav { position: fixed; top: 0; width: 100%; height: 80px; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; z-index: 1000; transition: all 0.4s ease; background: transparent; }
         .landing-nav.scrolled { background: var(--bg-card); box-shadow: 0 4px 20px rgba(0,0,0,0.08); height: 70px; }
         
-        .logo { position: absolute; left: 5%; top: 50%; transform: translateY(-50%); font-family: var(--font-heading); font-size: 28px; font-weight: 900; color: var(--text-main); letter-spacing: -1px; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        /* Letras blancas al inicio, oscuras al hacer scroll */
+        .logo { position: absolute; left: 5%; top: 50%; transform: translateY(-50%); font-family: var(--font-heading); font-size: 28px; font-weight: 900; color: #ffffff; letter-spacing: -1px; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
         .logo span { color: var(--primary); }
-        .landing-nav.scrolled .logo { left: 50%; transform: translate(-50%, -50%); font-size: 22px; }
+        .landing-nav.scrolled .logo { color: var(--text-main); left: 50%; transform: translate(-50%, -50%); font-size: 22px; }
 
         .nav-links { margin-left: 200px; display: flex; gap: 25px; transition: 0.3s; }
-        .nav-links a { color: var(--text-main); text-decoration: none; font-weight: 600; font-size: 15px; transition: 0.2s; }
+        .nav-links a { color: #ffffff; text-decoration: none; font-weight: 600; font-size: 15px; transition: 0.2s; }
+        .landing-nav.scrolled .nav-links a { color: var(--text-main); }
         .nav-links a:hover { color: var(--primary); }
         
         .nav-actions { display: flex; gap: 15px; align-items: center; position: absolute; right: 5%; top: 50%; transform: translateY(-50%); }
         
-        /* Ocultar botones de navegación central si hay poco espacio en la ventana */
         @media (max-width: 1000px) { .nav-links { display: none; } }
 
         /* BOTONES GLOBALES */
         button { font-family: var(--font-main); cursor: pointer; transition: all 0.3s ease; border-radius: 8px; font-weight: 600; }
-        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); padding: 8px 15px; }
+        
+        /* Botón Modo Oscuro Camaleónico */
+        .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.4); color: #ffffff; padding: 8px 15px; }
+        .landing-nav.scrolled .btn-outline { border: 1px solid var(--border); color: var(--text-main); }
+        
         .btn-primary { background: var(--accent); color: #1E293B; border: none; padding: 12px 24px; }
         .btn-primary:hover { background: #d97706; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2); }
 
@@ -79,7 +87,7 @@
         .feature-card p { color: var(--text-muted); line-height: 1.6; font-size: 15px; }
 
         /* =========================================
-           4. SIMULADORES EXPANDIBLES (EL "MAGO")
+           4. SIMULADORES EXPANDIBLES
            ========================================= */
         #simulator-container { max-height: 0; overflow: hidden; transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s; opacity: 0; margin-top: 10px; max-width: 1200px; margin-left: auto; margin-right: auto;}
         #simulator-container.expanded { max-height: 600px; opacity: 1; margin-bottom: 60px; }
@@ -88,18 +96,18 @@
         .sim-box.active { display: block; animation: fadeIn 0.5s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Mini-Dashboard (Simulador 1) */
+        /* Mini-Dashboard */
         .mock-dash { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
         .mock-kpi { background: var(--bg-body); padding: 20px; border-radius: 8px; border-left: 4px solid var(--primary); text-align: left; }
         .mock-kpi h4 { color: var(--text-muted); font-size: 13px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;}
         .mock-kpi .val { font-size: 32px; font-weight: 800; color: var(--text-main); font-family: var(--font-heading); }
         
-        /* Mini-Gráfico (Simulador 2) */
+        /* Mini-Gráfico */
         .mock-chart { height: 200px; display: flex; align-items: flex-end; justify-content: space-around; padding-top: 20px; border-bottom: 2px solid var(--border); border-left: 2px solid var(--border); padding-left: 10px;}
         .mock-bar { width: 12%; background: var(--primary); border-radius: 4px 4px 0 0; position: relative; transition: 1s ease-out; height: 0; display: flex; justify-content: center; }
         .mock-bar span { position: absolute; top: -25px; font-weight: bold; font-size: 13px; color: var(--text-muted); }
 
-        /* Mini-Bitácora (Simulador 3) */
+        /* Mini-Bitácora */
         .mock-bitacora { display: flex; flex-direction: column; gap: 15px; text-align: left; }
         .mock-item { background: var(--bg-body); padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent); display: flex; justify-content: space-between; align-items: center;}
         
@@ -121,7 +129,6 @@
         .cta-final { padding: 100px 20px; background: linear-gradient(135deg, #0f172a 0%, #0D9488 100%); text-align: center; color: white; }
         .cta-final h2 { font-size: 42px; margin-bottom: 20px; }
         
-        /* Animación del botón final al hacer scroll */
         #btn-cta-bottom { opacity: 0; transform: translateY(30px); transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
         #btn-cta-bottom.visible { opacity: 1; transform: translateY(0); animation: pulseFloat 2.5s infinite 1s; }
         @keyframes pulseFloat { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6); transform: translateY(0); } 50% { transform: translateY(-5px); } 70% { box-shadow: 0 0 0 15px rgba(245, 158, 11, 0); } 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); transform: translateY(0); } }
@@ -140,7 +147,6 @@
         #login-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(8px); }
         .login-box { background: var(--bg-card); padding: 50px 40px; border-radius: 12px; text-align: center; width: 420px; position: relative; border: 1px solid var(--border); box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
         
-        /* Fix Equis Centrada */
         .close-btn { position: absolute; top: 15px; right: 15px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 26px; cursor: pointer; color: var(--text-muted); border: none; background: transparent; border-radius: 50%; transition: 0.2s; }
         .close-btn:hover { color: var(--danger); background: rgba(239, 68, 68, 0.1); }
         
@@ -323,7 +329,6 @@
     </div>
 
     <script>
-        // 1. CONEXIÓN SUPABASE PARA REDIRECCIÓN
         const motorSupabase = window.supabase.createClient(
             'https://lxjavcebbewkngtubkvc.supabase.co',
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4amF2Y2ViYmV3a25ndHVia3ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjMzMzYsImV4cCI6MjA5NDc5OTMzNn0.FD3H_L2jtBx4Ok4CrXbxI78Uh7c3tsrdecZLupmAZDo'
@@ -335,7 +340,6 @@
             if (session) window.location.href = 'bitacora.html';
         };
 
-        // 2. FUNCIONES UI (Modo Oscuro & Modal)
         function toggleModoOscuro() {
             document.body.classList.toggle('dark-mode');
             localStorage.setItem('modo_oscuro', document.body.classList.contains('dark-mode'));
@@ -344,32 +348,23 @@
         function abrirModal() { document.getElementById('login-modal').style.display = 'flex'; }
         function cerrarModal() { document.getElementById('login-modal').style.display = 'none'; document.getElementById('auth-error').style.display = 'none'; }
 
-        // 3. LÓGICA DE SIMULADORES (EXPANSIÓN)
         function abrirSimulador(idContenido, tarjetaHtml) {
-            // Apagar todo
             document.querySelectorAll('.feature-card').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.sim-box').forEach(b => b.classList.remove('active'));
             
-            // Encender el seleccionado
             tarjetaHtml.classList.add('active');
             document.getElementById(idContenido).classList.add('active');
             
-            // Expandir el contenedor maestro y bajar un poco la pantalla
             const contenedor = document.getElementById('simulator-container');
             contenedor.classList.add('expanded');
             
-            // Efecto de crecimiento de barras si es el gráfico
             if(idContenido === 'sim-datos') {
                 const barras = document.querySelectorAll('.mock-bar');
                 barras.forEach(b => { let h = b.style.height; b.style.height = '0'; setTimeout(()=> b.style.height = h, 100); });
             }
-
-            setTimeout(() => {
-                contenedor.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }, 300);
+            setTimeout(() => contenedor.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 300);
         }
 
-        // 4. ANIMACIONES AL HACER SCROLL (Sticky Nav & CTA)
         window.addEventListener('scroll', () => {
             const nav = document.getElementById('main-nav');
             if (window.scrollY > 50) nav.classList.add('scrolled');
@@ -378,13 +373,10 @@
             const ctaBtn = document.getElementById('btn-cta-bottom');
             if(ctaBtn) {
                 const rect = ctaBtn.getBoundingClientRect();
-                if (rect.top < window.innerHeight - 50) {
-                    ctaBtn.classList.add('visible');
-                }
+                if (rect.top < window.innerHeight - 50) ctaBtn.classList.add('visible');
             }
         });
 
-        // 5. LOGIN
         async function procesarLogin() {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-pass').value;
