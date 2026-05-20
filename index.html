@@ -367,7 +367,7 @@
         window.onload = async () => {
             if (localStorage.getItem('modo_oscuro') === 'true') document.body.classList.add('dark-mode');
             const { data: { session } } = await motorSupabase.auth.getSession();
-            if (session) window.location.href = 'bitacora.html';
+            if (session) window.location.href = 'app/inicio.html';
         };
 
         function toggleModoOscuro() {
@@ -423,7 +423,7 @@
                 errorMsg.style.display = "block";
                 btn.disabled = false; btn.innerText = "Entrar al Dashboard Seguro";
             } else {
-                window.location.href = 'bitacora.html';
+                window.location.href = 'app/inicio.html';
             }
         }
     </script>
