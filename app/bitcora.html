@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitácora - Zentraliza</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%230D9488%22/><text x=%2250%25%22 y=%2252%25%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-weight=%22900%22 font-size=%2265%22 fill=%22%23ffffff%22>Z</text></svg>">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --bg-body: #F8FAFC; --bg-card: #ffffff; --text-main: #1E293B; --text-muted: #64748b; --border: #e2e8f0; --primary: #0D9488; --accent: #F59E0B; --danger: #ef4444; --success: #10b981; --warning: #f59e0b; --font-main: 'Inter', system-ui, sans-serif; --font-heading: 'Montserrat', sans-serif; }
+        body.dark-mode { --bg-body: #0F172A; --bg-card: #1e293b; --text-main: #F8FAFC; --text-muted: #94a3b8; --border: #334155; }
+        * { box-sizing: border-box; font-family: var(--font-main); }
+        body { margin: 0; padding: 0; background-color: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden;}
+        h1, h2, h3 { font-family: var(--font-heading); margin-top: 0; }
+        
+        /* SIDEBAR */
+        .sidebar { width: 260px; background: var(--bg-card); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 25px 20px; position: fixed; height: 100vh; z-index: 100;}
+        .logo { font-size: 24px; font-weight: 900; color: var(--text-main); letter-spacing: -1px; }
+        .logo span { color: var(--primary); }
+        .nav-menu { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .nav-item { padding: 12px 15px; border-radius: 8px; color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
+        .nav-item:hover { background: var(--bg-body); color: var(--primary); }
+        .nav-item.active { background: rgba(13, 148, 136, 0.1); color: var(--primary); }
+        .user-widget { padding-top: 20px; border-top: 1px solid var(--border); }
+        .user-name { font-size: 14px; font-weight: 700; display: block; padding-left: 10px; margin-bottom: 10px;}
+        .btn-shell { width: 100%; text-align: left; background: transparent; border: none; padding: 10px; color: var(--text-muted); font-weight: 600; font-size: 14px; cursor: pointer; border-radius: 6px; transition: 0.2s;}
+        .btn-shell:hover { background: var(--bg-body); color: var(--text-main); }
+        .btn-shell.danger:hover { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+
+        /* MAIN CONTENT */
+        .main-content { margin-left: 260px; flex: 1; padding: 40px; min-width: 900px;}
+        .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        #realtime-badge { font-weight: 600; font-size: 12px; background: rgba(16, 185, 129, 0.1); padding: 6px 12px; border-radius: 20px; color: var(--success); border: 1px solid var(--success); display: flex; align-items: center; gap: 6px;}
+        .dot { width: 8px; height: 8px; background-color: var(--success); border-radius: 50%; animation: blink 2s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+        /* MÓDULOS DE BITÁCORA */
+        .top-modules { display: grid; grid-template-columns: 2.5fr 1.5fr; gap: 20px; }
+        .card { background: var(--bg-card); border-radius: 12px; padding: 20px; border: 1px solid var(--border); }
+        .card h2 { font-size: 20px; color: var(--primary); border-bottom: 2px solid var(--bg-body); padding-bottom: 12px; }
+        input, select, button { padding: 10px; border: 1px solid var(--border); border-radius: 6px; background-color: var(--bg-body); color: var(--text-main); font-size: 14px; outline: none; }
+        button.btn-primary { background: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer; transition: 0.2s;}
+        button.btn-primary:hover { opacity: 0.9; }
+
+        .item-list { max-height: 400px; overflow-y: auto; padding-right: 5px; }
+        .item, .task-card { background: var(--bg-body); padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 14px; border: 1px solid var(--border); border-left: 4px solid var(--primary); position: relative; }
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 700; color: white; display: inline-block; margin-bottom: 6px;}
+        .delete-btn { background: transparent; color: var(--text-muted); padding: 0; position: absolute; top: 10px; right: 10px; font-size: 18px; border: none; cursor: pointer; }
+        .delete-btn:hover { color: var(--danger); }
+        .task-card.completada { opacity: 0.6; text-decoration: line-through; border-left-color: var(--success); }
+        #toast-sync { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white; padding: 12px 24px; border-radius: 8px; display: none; z-index: 1000; font-weight: 600; font-size: 14px;}
+    </style>
+</head>
+<body>
+
+    <div id="toast-sync">🔄 Sincronizando datos...</div>
+
+    <aside class="sidebar">
+        <div style="margin-bottom: 40px; padding-left: 10px;">
+            <div class="logo" style="margin-bottom: 0; padding-left: 0;">Zentraliza<span>.</span></div>
+            <div style="font-size: 13px; font-weight: 800; color: var(--text-muted); letter-spacing: 1px; margin-top: -5px;">HLF - ESPEX</div>
+        </div>
+        <nav class="nav-menu">
+            <a href="inicio.html" class="nav-item">🏠 Inicio</a>
+            <a href="asistencia.html" class="nav-item">📊 Asistencia</a>
+            <a href="bitacora.html" class="nav-item active">📋 Bitácora</a>
+            <a href="dashboard.html" class="nav-item">📈 Dashboard</a>
+        </nav>
+        <div class="user-widget">
+            <span class="user-name" id="user-display-name">Cargando...</span>
+            <button class="btn-shell" onclick="toggleModoOscuro()">🌙 Alternar Tema</button>
+            <button class="btn-shell danger" onclick="cerrarSesion()">🚪 Cerrar Sesión</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="top-header">
+            <h1 style="font-size: 28px; margin:0;">Registro de Operaciones</h1>
+            <span id="realtime-badge"><span class="dot"></span> Tiempo Real Activo</span>
+        </div>
+
+        <div class="top-modules">
+            <div class="card">
+                <h2>Bitácora de Novedades</h2>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <select id="bit-tipo" style="width: 25%;">
+                        <option value="Incidencia">🚨 Incidencia</option>
+                        <option value="Situación">👤 Situación</option>
+                        <option value="Instrucción">📋 Instrucción</option>
+                    </select>
+                    <input type="text" id="bit-texto" placeholder="Detalle de la novedad..." style="width: 60%;" onkeyup="if(event.key === 'Enter') guardarBitacora()">
+                    <button class="btn-primary" onclick="guardarBitacora()" style="width: 15%;">Registrar</button>
+                </div>
+                <div class="item-list" id="contenedor-bitacora"></div>
+            </div>
+
+            <div class="card">
+                <h2>Gestión de Tareas</h2>
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+                    <input type="text" id="tarea-titulo" placeholder="Título de la tarea..." style="font-weight: 600;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <select id="tarea-cat" style="width: 35%;"><option>General</option><option>Bloqueo</option><option>Mesa Central</option><option>Ingresos</option></select>
+                        <select id="tarea-urgencia" style="width: 30%;"><option value="Baja">Urg. Baja</option><option value="Media">Urg. Media</option><option value="Alta">Urg. Alta</option></select>
+                        <input type="date" id="tarea-hasta" style="width: 35%;">
+                    </div>
+                    <button class="btn-primary" onclick="guardarTarea()">Añadir Tarea</button>
+                </div>
+                <div class="item-list" id="contenedor-tareas"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const motorSupabase = window.supabase.createClient('https://lxjavcebbewkngtubkvc.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4amF2Y2ViYmV3a25ndHVia3ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjMzMzYsImV4cCI6MjA5NDc5OTMzNn0.FD3H_L2jtBx4Ok4CrXbxI78Uh7c3tsrdecZLupmAZDo');
+        let nombreAdminActivo = ""; let dbData = { bitacora: [], tareas: [] }; let hayCambiosSinGuardar = false;
+
+        window.onload = async () => {
+            if (localStorage.getItem('modo_oscuro') === 'true') document.body.classList.add('dark-mode');
+            const { data: { session } } = await motorSupabase.auth.getSession();
+            if (!session) { window.location.href = '../index.html'; return; }
+            nombreAdminActivo = session.user.email.split('@')[0];
+            document.getElementById('user-display-name').innerText = "👤 " + nombreAdminActivo;
+
+            cargarDatosIniciales();
+            motorSupabase.channel('bitacora-channel').on('postgres_changes', { event: '*', schema: 'public' }, () => {
+                mostrarToast("🔄 Datos sincronizados"); cargarDatosIniciales();
+            }).subscribe();
+        };
+
+        function toggleModoOscuro() { document.body.classList.toggle('dark-mode'); localStorage.setItem('modo_oscuro', document.body.classList.contains('dark-mode')); }
+        async function cerrarSesion() { await motorSupabase.auth.signOut(); window.location.href = '../index.html'; }
+        function mostrarToast(msg) { const t = document.getElementById('toast-sync'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2500); }
+        function obtenerFecha() { const now = new Date(); return `${now.toLocaleDateString('es-CL')} ${now.toLocaleTimeString('es-CL', {hour: '2-digit', minute:'2-digit'})}`; }
+        function generarIdSeguro() { return Math.floor(Math.random() * 900000000) + 100000000; }
+
+        async function cargarDatosIniciales() {
+            const [bit, tar] = await Promise.all([
+                motorSupabase.from('bitacora').select('*').eq('estado_borrado', false).order('id', { ascending: false }),
+                motorSupabase.from('tareas').select('*').eq('estado_borrado', false).order('id', { ascending: false })
+            ]);
+            dbData.bitacora = bit.data || []; dbData.tareas = tar.data || [];
+            renderBitacora(); renderTareas();
+        }
+
+        async function guardarBitacora() {
+            const txt = document.getElementById('bit-texto').value.trim(); const tipo = document.getElementById('bit-tipo').value;
+            if (!txt) return; document.getElementById('bit-texto').value = '';
+            const n = { id: generarIdSeguro(), fecha_hora: obtenerFecha(), autor: nombreAdminActivo, tipo_mensaje: tipo, mensaje: txt, estado_borrado: false };
+            if (!(await motorSupabase.from('bitacora').insert([n])).error) { dbData.bitacora.unshift(n); renderBitacora(); }
+        }
+
+        function renderBitacora() {
+            const c = document.getElementById('contenedor-bitacora'); c.innerHTML = '';
+            dbData.bitacora.slice(0, 40).forEach(i => {
+                let col = i.tipo_mensaje === 'Incidencia' ? 'var(--danger)' : (i.tipo_mensaje === 'Situación' ? 'var(--warning)' : 'var(--primary)');
+                c.innerHTML += `<div class="item" style="border-left-color: ${col}"><button class="delete-btn" onclick="borrarRegistro('bitacora', '${i.id}')">×</button><span class="badge" style="background-color: ${col}; color: ${i.tipo_mensaje === 'Situación' ? '#1E293B': '#fff'}">${i.tipo_mensaje}</span><div style="margin-top:8px; line-height: 1.4;">${i.mensaje}</div><div style="font-size: 12px; color: var(--text-muted); margin-top: 8px; display: flex; justify-content: space-between;"><span>Por: ${i.autor}</span><span>${i.fecha_hora}</span></div></div>`;
+            });
+        }
+
+        async function guardarTarea() {
+            const tit = document.getElementById('tarea-titulo').value.trim(); if (!tit) return;
+            const n = { id: generarIdSeguro(), fecha_hora: obtenerFecha(), autor: nombreAdminActivo, categoria_tag: document.getElementById('tarea-cat').value, color: '#0D9488', titulo: tit, urgencia: document.getElementById('tarea-urgencia').value, hasta: document.getElementById('tarea-hasta').value || 'Sin fecha', estado: 'Pendiente', estado_borrado: false };
+            document.getElementById('tarea-titulo').value = '';
+            if (!(await motorSupabase.from('tareas').insert([n])).error) { dbData.tareas.unshift(n); renderTareas(); }
+        }
+
+        async function cambiarEstadoTarea(id, chk) {
+            await motorSupabase.from('tareas').update({ estado: chk ? 'Completada' : 'Pendiente' }).eq('id', id);
+            let t = dbData.tareas.find(x => x.id == id); if(t) t.estado = chk ? 'Completada' : 'Pendiente'; renderTareas();
+        }
+
+        function renderTareas() {
+            const c = document.getElementById('contenedor-tareas'); c.innerHTML = '';
+            dbData.tareas.forEach(t => {
+                c.innerHTML += `<div class="task-card ${t.estado === 'Completada' ? 'completada' : ''}">
+                    <div style="display:flex; justify-content:space-between; align-items: center;">
+                        <div><div><span class="badge" style="background-color: var(--primary)">${t.categoria_tag}</span> <span class="badge" style="background-color: var(--${t.urgencia === 'Alta'? 'danger' : (t.urgencia === 'Media'? 'warning' : 'success')}); color: ${t.urgencia === 'Media'? '#1E293B':'#fff'}">${t.urgencia || ''}</span> <span style="font-size:12px; color:var(--text-muted); margin-left:5px;">Hasta: ${t.hasta}</span></div>
+                        <div style="font-size:14px; font-weight: 600; margin-top:6px;"><input type="checkbox" ${t.estado === 'Completada' ? 'checked' : ''} onchange="cambiarEstadoTarea('${t.id}', this.checked)"> ${t.titulo}</div></div>
+                        <button class="delete-btn" style="position:static;" onclick="borrarRegistro('tareas', '${t.id}')">×</button></div></div>`;
+            });
+        }
+
+        async function borrarRegistro(tabla, id) {
+            if (!confirm('¿Eliminar?')) return;
+            if (!(await motorSupabase.from(tabla).update({ estado_borrado: true }).eq('id', id)).error) {
+                dbData[tabla] = dbData[tabla].filter(x => x.id != id); renderBitacora(); renderTareas();
+            }
+        }
+    </script>
+</body>
+</html>
