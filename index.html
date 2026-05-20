@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zentraliza - Soluciones de Productividad</title>
+    <title>Zentraliza - Soluciones de Productividad y Datos</title>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
+        /* =========================================
+           1. PALETA DE COLORES Y TIPOGRAFÍA
+           ========================================= */
         :root {
             --bg-body: #F8FAFC; --bg-card: #ffffff; --text-main: #1E293B; --text-muted: #64748b;
             --border: #e2e8f0; --primary: #0D9488; --accent: #F59E0B; --danger: #ef4444;
@@ -16,114 +19,311 @@
 
         body.dark-mode {
             --bg-body: #0F172A; --bg-card: #1e293b; --text-main: #F8FAFC; --text-muted: #94a3b8;
-            --border: #334155;
+            --border: #334155; 
         }
 
         * { box-sizing: border-box; font-family: var(--font-main); }
-        body { margin: 0; padding: 0; background-color: var(--bg-body); color: var(--text-main); transition: background-color 0.3s, color 0.3s; }
-        h1, h2, h3 { font-family: var(--font-heading); margin-top: 0; }
+        html { scroll-behavior: smooth; }
+        body { margin: 0; padding: 0; background-color: var(--bg-body); color: var(--text-main); transition: 0.3s; min-width: 1000px;}
+        h1, h2, h3, h4 { font-family: var(--font-heading); margin-top: 0; }
 
-        /* NAVBAR */
-        .landing-nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; background: var(--bg-card); box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .logo { font-family: var(--font-heading); font-size: 28px; font-weight: 900; color: var(--text-main); letter-spacing: -1px; }
-        .logo span { color: var(--primary); }
+        /* =========================================
+           2. NAVEGACIÓN FLOTANTE (STICKY & LOGO ANIMADO)
+           ========================================= */
+        .landing-nav { position: fixed; top: 0; width: 100%; height: 80px; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; z-index: 1000; transition: all 0.4s ease; background: transparent; }
+        .landing-nav.scrolled { background: var(--bg-card); box-shadow: 0 4px 20px rgba(0,0,0,0.08); height: 70px; }
         
-        .nav-actions { display: flex; gap: 15px; align-items: center; }
+        .logo { position: absolute; left: 5%; top: 50%; transform: translateY(-50%); font-family: var(--font-heading); font-size: 28px; font-weight: 900; color: var(--text-main); letter-spacing: -1px; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .logo span { color: var(--primary); }
+        .landing-nav.scrolled .logo { left: 50%; transform: translate(-50%, -50%); font-size: 22px; }
+
+        .nav-links { margin-left: 200px; display: flex; gap: 25px; transition: 0.3s; }
+        .nav-links a { color: var(--text-main); text-decoration: none; font-weight: 600; font-size: 15px; transition: 0.2s; }
+        .nav-links a:hover { color: var(--primary); }
+        
+        .nav-actions { display: flex; gap: 15px; align-items: center; position: absolute; right: 5%; top: 50%; transform: translateY(-50%); }
+        
+        /* Ocultar botones de navegación central si hay poco espacio en la ventana */
+        @media (max-width: 1000px) { .nav-links { display: none; } }
+
+        /* BOTONES GLOBALES */
         button { font-family: var(--font-main); cursor: pointer; transition: all 0.3s ease; border-radius: 8px; font-weight: 600; }
-        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); padding: 10px 15px; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); padding: 8px 15px; }
         .btn-primary { background: var(--accent); color: #1E293B; border: none; padding: 12px 24px; }
-        .btn-primary:hover { background: #d97706; transform: translateY(-2px); }
+        .btn-primary:hover { background: #d97706; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2); }
+
+        /* =========================================
+           3. SECCIONES PRINCIPALES
+           ========================================= */
+        .section-container { padding: 100px 5%; text-align: center; max-width: 1200px; margin: 0 auto; }
+        .section-title { font-size: 36px; color: var(--text-main); margin-bottom: 20px; font-weight: 800; letter-spacing: -0.5px;}
+        .section-subtitle { font-size: 18px; color: var(--text-muted); max-width: 700px; margin: 0 auto 50px auto; line-height: 1.6; }
 
         /* HERO */
-        .hero { background: linear-gradient(135deg, #0F172A 0%, #1e293b 100%); color: #F8FAFC; text-align: center; padding: 100px 20px; }
-        .hero h1 { font-size: 4rem; font-weight: 800; margin: 0 0 20px 0; letter-spacing: -1.5px; line-height: 1.1; }
+        .hero { background: linear-gradient(135deg, #0F172A 0%, #1e293b 100%); color: #F8FAFC; text-align: center; padding: 160px 20px 100px 20px; }
+        .hero h1 { font-size: 64px; font-weight: 900; margin: 0 0 20px 0; letter-spacing: -1.5px; line-height: 1.1; }
         .hero h1 span { color: var(--primary); }
-        .hero p { font-size: 1.1rem; color: #94a3b8; max-width: 700px; margin: 0 auto 40px auto; line-height: 1.6; }
+        .hero p { font-size: 20px; color: #94a3b8; max-width: 750px; margin: 0 auto 40px auto; line-height: 1.6; }
 
-        /* FEATURES */
-        .features-wrapper { padding: 80px 20px; text-align: center; }
-        .features { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; max-width: 1200px; margin: 0 auto; }
-        .feature-card { background: var(--bg-card); padding: 40px 30px; border-radius: 12px; border: 1px solid var(--border); width: 100%; max-width: 350px; transition: transform 0.3s; }
-        .feature-card:hover { transform: translateY(-5px); border-color: var(--primary); }
-        .feature-card .icon { font-size: 40px; margin-bottom: 20px; }
-        .feature-card p { color: var(--text-muted); line-height: 1.6; }
-
-        /* MODAL */
-        #login-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(8px); }
-        .login-box { background: var(--bg-card); padding: 50px 40px; border-radius: 12px; text-align: center; width: 90%; max-width: 420px; position: relative; border: 1px solid var(--border); }
+        /* SOLUCIONES (FEATURES) */
+        .features-wrapper { background: var(--bg-body); padding-bottom: 40px; }
+        .features { display: flex; justify-content: center; gap: 30px; }
+        .feature-card { background: var(--bg-card); padding: 40px 30px; border-radius: 12px; border: 1px solid var(--border); width: 32%; transition: all 0.3s ease; cursor: pointer; position: relative; overflow: hidden; }
+        .feature-card::before { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: var(--primary); transform: scaleX(0); transition: 0.3s; transform-origin: left; }
+        .feature-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .feature-card:hover::before { transform: scaleX(1); }
+        .feature-card.active { border-color: var(--primary); box-shadow: 0 10px 30px rgba(13, 148, 136, 0.1); }
         
-        /* FIX DE LA X PARA CERRAR */
-        .close-btn { position: absolute; top: 15px; right: 15px; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; color: var(--text-muted); border: none; background: transparent; border-radius: 50%; line-height: 1; }
+        .feature-card .icon { font-size: 48px; margin-bottom: 20px; display: inline-block; }
+        .feature-card h3 { font-size: 22px; color: var(--text-main); margin-bottom: 15px; }
+        .feature-card p { color: var(--text-muted); line-height: 1.6; font-size: 15px; }
+
+        /* =========================================
+           4. SIMULADORES EXPANDIBLES (EL "MAGO")
+           ========================================= */
+        #simulator-container { max-height: 0; overflow: hidden; transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s; opacity: 0; margin-top: 10px; max-width: 1200px; margin-left: auto; margin-right: auto;}
+        #simulator-container.expanded { max-height: 600px; opacity: 1; margin-bottom: 60px; }
+        
+        .sim-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.03); display: none; }
+        .sim-box.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Mini-Dashboard (Simulador 1) */
+        .mock-dash { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .mock-kpi { background: var(--bg-body); padding: 20px; border-radius: 8px; border-left: 4px solid var(--primary); text-align: left; }
+        .mock-kpi h4 { color: var(--text-muted); font-size: 13px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .mock-kpi .val { font-size: 32px; font-weight: 800; color: var(--text-main); font-family: var(--font-heading); }
+        
+        /* Mini-Gráfico (Simulador 2) */
+        .mock-chart { height: 200px; display: flex; align-items: flex-end; justify-content: space-around; padding-top: 20px; border-bottom: 2px solid var(--border); border-left: 2px solid var(--border); padding-left: 10px;}
+        .mock-bar { width: 12%; background: var(--primary); border-radius: 4px 4px 0 0; position: relative; transition: 1s ease-out; height: 0; display: flex; justify-content: center; }
+        .mock-bar span { position: absolute; top: -25px; font-weight: bold; font-size: 13px; color: var(--text-muted); }
+
+        /* Mini-Bitácora (Simulador 3) */
+        .mock-bitacora { display: flex; flex-direction: column; gap: 15px; text-align: left; }
+        .mock-item { background: var(--bg-body); padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent); display: flex; justify-content: space-between; align-items: center;}
+        
+        /* =========================================
+           5. QUIÉNES SOMOS & VALORES
+           ========================================= */
+        #quienes-somos { background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .text-block { max-width: 800px; margin: 0 auto; text-align: left; }
+        .text-block p { font-size: 18px; line-height: 1.8; color: var(--text-muted); margin-bottom: 20px;}
+        .text-block strong { color: var(--text-main); }
+
+        #valores .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-top: 40px; text-align: left; }
+        .valor-card { padding: 30px; background: var(--bg-body); border-radius: 12px; border: 1px solid var(--border); }
+        .valor-card h3 { color: var(--primary); font-size: 20px; }
+
+        /* =========================================
+           6. CTA Y FOOTER CORPORATIVO
+           ========================================= */
+        .cta-final { padding: 100px 20px; background: linear-gradient(135deg, #0f172a 0%, #0D9488 100%); text-align: center; color: white; }
+        .cta-final h2 { font-size: 42px; margin-bottom: 20px; }
+        
+        /* Animación del botón final al hacer scroll */
+        #btn-cta-bottom { opacity: 0; transform: translateY(30px); transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        #btn-cta-bottom.visible { opacity: 1; transform: translateY(0); animation: pulseFloat 2.5s infinite 1s; }
+        @keyframes pulseFloat { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6); transform: translateY(0); } 50% { transform: translateY(-5px); } 70% { box-shadow: 0 0 0 15px rgba(245, 158, 11, 0); } 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); transform: translateY(0); } }
+
+        .footer { background: #0F172A; color: #94a3b8; padding: 60px 5% 30px 5%; font-size: 14px; }
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 40px; margin-bottom: 40px; border-bottom: 1px solid #334155; padding-bottom: 40px; }
+        .footer h3 { color: white; font-size: 18px; margin-bottom: 20px; }
+        .footer p { line-height: 1.6; }
+        .footer a { color: #94a3b8; text-decoration: none; display: block; margin-bottom: 10px; transition: 0.2s; }
+        .footer a:hover { color: var(--primary); }
+        .footer-bottom { text-align: center; color: #64748b; }
+
+        /* =========================================
+           7. MODAL DE LOGIN
+           ========================================= */
+        #login-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(8px); }
+        .login-box { background: var(--bg-card); padding: 50px 40px; border-radius: 12px; text-align: center; width: 420px; position: relative; border: 1px solid var(--border); box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
+        
+        /* Fix Equis Centrada */
+        .close-btn { position: absolute; top: 15px; right: 15px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 26px; cursor: pointer; color: var(--text-muted); border: none; background: transparent; border-radius: 50%; transition: 0.2s; }
         .close-btn:hover { color: var(--danger); background: rgba(239, 68, 68, 0.1); }
         
-        .login-box input { width: 100%; padding: 14px; margin: 8px 0 24px 0; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-body); color: var(--text-main); font-size: 16px; outline: none; }
+        .login-box input { width: 100%; padding: 14px; margin: 8px 0 24px 0; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-body); color: var(--text-main); font-size: 16px; outline: none; transition: 0.3s; }
         .login-box input:focus { border-color: var(--primary); }
         .btn-full { width: 100%; padding: 14px; font-size: 16px; background: var(--primary); color: white; border: none; }
         .btn-full:hover { background: #0f766e; }
 
-        /* RESPONSIVE */
-        @media (max-width: 768px) {
-            .hero h1 { font-size: 2.5rem; }
-            .landing-nav { flex-direction: column; gap: 15px; padding: 20px; }
-            .hero { padding: 60px 20px; }
-        }
     </style>
 </head>
 <body>
 
-    <nav class="landing-nav">
-        <div class="logo">Zentraliza<span>.</span></div>
+    <nav id="main-nav" class="landing-nav">
+        <div class="nav-links">
+            <a href="#quienes-somos">Quiénes Somos</a>
+            <a href="#valores">Valores</a>
+        </div>
+        
+        <div class="logo" id="logo-header">Zentraliza<span>.</span></div>
+        
         <div class="nav-actions">
             <button class="btn-outline" onclick="toggleModoOscuro()">🌙</button>
-            <button class="btn-outline" onclick="abrirModal()">Acceso Admin</button>
+            <button class="btn-primary" onclick="abrirModal()">Acceso Admin</button>
         </div>
     </nav>
 
     <header class="hero">
-        <h1>Todo en un <span>solo lugar</span>.</h1>
-        <p>Empresa líder en desarrollo de aplicaciones de productividad, análisis de datos profundos y dashboards de control operativo para equipos de alto rendimiento.</p>
-        <button class="btn-primary" onclick="abrirModal()">Ingresar a la Plataforma</button>
+        <h1>Control total en un <span>solo lugar</span>.</h1>
+        <p>Empresa líder en desarrollo de aplicaciones de productividad, análisis de datos profundos y dashboards de control operativo para equipos de alto rendimiento B2B.</p>
+        <button class="btn-primary" onclick="document.getElementById('soluciones').scrollIntoView();" style="font-size: 18px; padding: 16px 32px;">Descubre cómo funciona</button>
     </header>
 
-    <section class="features-wrapper">
-        <h2 style="font-size: 2rem; margin-bottom: 40px;">Nuestras Soluciones</h2>
+    <section id="soluciones" class="section-container features-wrapper">
+        <h2 class="section-title">Nuestras Soluciones Tecnológicas</h2>
+        <p class="section-subtitle">Haz clic en nuestras áreas de expertise para interactuar con una demostración funcional en tiempo real.</p>
+        
         <div class="features">
-            <div class="feature-card">
+            <div class="feature-card" onclick="abrirSimulador('sim-datos', this)">
                 <div class="icon">📈</div>
                 <h3>Análisis de Datos</h3>
-                <p>Transformamos la información dispersa de tu empresa en métricas claras, precisas y accionables en tiempo real.</p>
+                <p>Transformamos información dispersa en métricas visuales precisas y accionables al instante.</p>
             </div>
-            <div class="feature-card">
+            <div class="feature-card" onclick="abrirSimulador('sim-apps', this)">
                 <div class="icon">⚡</div>
                 <h3>Apps a Medida</h3>
-                <p>Desarrollo de software diseñado para eliminar cuellos de botella y acelerar los flujos de trabajo operativos.</p>
+                <p>Interfaces personalizadas como bitácoras o portales de auditoría para acelerar tu operación.</p>
             </div>
-            <div class="feature-card">
+            <div class="feature-card" onclick="abrirSimulador('sim-dash', this)">
                 <div class="icon">📊</div>
                 <h3>Control Operativo</h3>
-                <p>Dashboards dinámicos, gestión visual mediante Kanban y bitácoras inteligentes protegidas en la nube.</p>
+                <p>Dashboards dinámicos para monitorear SLAs, productividad de ejecutivos y tickets activos.</p>
+            </div>
+        </div>
+
+        <div id="simulator-container">
+            <div id="sim-datos" class="sim-box">
+                <h3 style="text-align: left; color: var(--primary);">📊 Visualizador de Rendimiento Q3 (Simulación)</h3>
+                <div class="mock-chart">
+                    <div class="mock-bar" style="height: 40%;"><span>40%</span></div>
+                    <div class="mock-bar" style="height: 65%;"><span>65%</span></div>
+                    <div class="mock-bar" style="height: 50%;"><span>50%</span></div>
+                    <div class="mock-bar" style="height: 90%; background: var(--accent);"><span>90%</span></div>
+                    <div class="mock-bar" style="height: 75%;"><span>75%</span></div>
+                </div>
+                <p style="text-align: left; color: var(--text-muted); font-size: 13px; margin-top: 15px;">* Los gráficos interactivos permiten identificar picos de producción e incidencias rápidamente.</p>
+            </div>
+
+            <div id="sim-apps" class="sim-box">
+                <h3 style="text-align: left; color: var(--primary);">📋 Portal de Auditoría de Calidad (Mockup)</h3>
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <select style="width: 30%;"><option>Aprobado</option><option>Rechazado</option></select>
+                    <input type="text" placeholder="Observación del auditor..." style="width: 50%;">
+                    <button class="btn-primary" style="width: 20%;" onclick="alert('Demostración UI: Registro guardado en la nube.')">Ingresar</button>
+                </div>
+                <div class="mock-bitacora">
+                    <div class="mock-item">
+                        <div><strong>Auditoría #1042</strong> <br><span style="font-size:13px; color:var(--text-muted)">Revisión de protocolos de seguridad - Correcto.</span></div>
+                        <span style="color: var(--success); font-weight: bold;">✓ Aprobado</span>
+                    </div>
+                    <div class="mock-item" style="border-left-color: var(--danger);">
+                        <div><strong>Auditoría #1041</strong> <br><span style="font-size:13px; color:var(--text-muted)">Falta de firmas en formulario de ingreso.</span></div>
+                        <span style="color: var(--danger); font-weight: bold;">× Rechazado</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sim-dash" class="sim-box">
+                <h3 style="text-align: left; color: var(--primary);">⚡ Centro de Control en Vivo (Simulación)</h3>
+                <div class="mock-dash">
+                    <div class="mock-kpi">
+                        <h4>SLA Global</h4>
+                        <div class="val" style="color: var(--success);">99.8%</div>
+                    </div>
+                    <div class="mock-kpi">
+                        <h4>Tickets Críticos</h4>
+                        <div class="val" style="color: var(--danger);">02</div>
+                    </div>
+                    <div class="mock-kpi">
+                        <h4>Ejecutivos Conectados</h4>
+                        <div class="val">14 / 17</div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
+    <section id="quienes-somos" class="section-container">
+        <h2 class="section-title">Quiénes Somos</h2>
+        <div class="text-block">
+            <p>En <strong>Zentraliza</strong> nacimos de una necesidad operativa real: la frustración de gestionar equipos y datos a través de hojas de cálculo desconectadas, correos perdidos y reportes estáticos. Somos un equipo de arquitectos de software e ingenieros de procesos obsesionados con la eficiencia.</p>
+            <p>No desarrollamos páginas web; construimos <strong>motores operativos en la nube</strong>. Integramos todo el flujo de trabajo de tu empresa en una única interfaz segura, garantizando que cada líder de área tenga visibilidad y control absoluto al instante.</p>
+        </div>
+    </section>
+
+    <section id="valores" class="section-container">
+        <h2 class="section-title">Nuestros Pilares</h2>
+        <p class="section-subtitle">El código es solo la herramienta; la filosofía detrás de cada línea de código es lo que garantiza el éxito de nuestros clientes corporativos.</p>
+        
+        <div class="grid-3">
+            <div class="valor-card">
+                <h3>01. Verdad en Tiempo Real</h3>
+                <p style="color: var(--text-muted); line-height: 1.6; margin-top: 10px;">Si los datos no son instantáneos, son historia. Aseguramos sincronización WebSocket en cada solución.</p>
+            </div>
+            <div class="valor-card">
+                <h3>02. Seguridad Bancaria</h3>
+                <p style="color: var(--text-muted); line-height: 1.6; margin-top: 10px;">Tu información es tu activo más valioso. Implementamos protocolos JWT y Row-Level Security por defecto.</p>
+            </div>
+            <div class="valor-card">
+                <h3>03. Fricción Cero</h3>
+                <p style="color: var(--text-muted); line-height: 1.6; margin-top: 10px;">Las mejores herramientas no requieren manuales de uso. Diseñamos UX intuitivo para adopción inmediata.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-final">
+        <h2>¿Listo para optimizar tu operación?</h2>
+        <p style="font-size: 18px; opacity: 0.9; margin-bottom: 40px;">Centraliza la información, empodera a tu equipo y escala sin límites.</p>
+        <button id="btn-cta-bottom" class="btn-primary" style="font-size: 20px; padding: 18px 40px;" onclick="abrirModal()">Comienza tu transformación</button>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-grid">
+            <div>
+                <h3 style="font-family: var(--font-heading); font-size: 24px; font-weight: 900; margin-bottom: 10px;">Zentraliza<span style="color: var(--primary)">.</span></h3>
+                <p>Arquitectura de software operativo B2B.<br>Santiago, Región Metropolitana, Chile.</p>
+            </div>
+            <div>
+                <h3>Plataforma</h3>
+                <a href="#soluciones">Análisis de Datos</a>
+                <a href="#soluciones">Desarrollo a Medida</a>
+                <a href="#soluciones">Control Operativo</a>
+            </div>
+            <div>
+                <h3>Compañía</h3>
+                <a href="#quienes-somos">Nuestra Historia</a>
+                <a href="#valores">Filosofía B2B</a>
+                <a href="mailto:contacto@zentraliza.corp">contacto@zentraliza.corp</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 Zentraliza Corp. Todos los derechos reservados. Diseñado para la alta productividad.
+        </div>
+    </footer>
+
     <div id="login-modal">
         <div class="login-box">
             <button class="close-btn" onclick="cerrarModal()">×</button>
-            <h2>Iniciar Sesión</h2>
-            <p style="color:var(--text-muted); margin-bottom: 30px;">Ingresa tus credenciales corporativas.</p>
+            <h2 style="color: var(--text-main); margin-bottom: 10px;">Iniciar Sesión</h2>
+            <p style="color:var(--text-muted); margin-bottom: 30px; font-size: 15px;">Ingresa tus credenciales corporativas.</p>
             
-            <div style="text-align: left; font-weight: 600; font-size: 14px;">Correo Electrónico</div>
-            <input type="email" id="auth-email" placeholder="admin@zentraliza.com">
+            <div style="text-align: left; font-weight: 600; font-size: 14px; margin-bottom: 5px; color: var(--text-main);">Correo Electrónico</div>
+            <input type="email" id="auth-email" placeholder="admin@zentraliza.corp">
             
-            <div style="text-align: left; font-weight: 600; font-size: 14px;">Contraseña</div>
+            <div style="text-align: left; font-weight: 600; font-size: 14px; margin-bottom: 5px; color: var(--text-main);">Contraseña</div>
             <input type="password" id="auth-pass" placeholder="••••••••" onkeyup="if(event.key === 'Enter') procesarLogin()">
             
-            <button id="btn-login" class="btn-full" onclick="procesarLogin()">Entrar al Sistema</button>
+            <button id="btn-login" class="btn-full" onclick="procesarLogin()">Entrar al Dashboard Seguro</button>
             <p id="auth-error" style="color: var(--danger); font-size: 14px; display: none; margin-top: 15px; font-weight: 500;">Credenciales incorrectas.</p>
         </div>
     </div>
 
     <script>
+        // 1. CONEXIÓN SUPABASE PARA REDIRECCIÓN
         const motorSupabase = window.supabase.createClient(
             'https://lxjavcebbewkngtubkvc.supabase.co',
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4amF2Y2ViYmV3a25ndHVia3ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjMzMzYsImV4cCI6MjA5NDc5OTMzNn0.FD3H_L2jtBx4Ok4CrXbxI78Uh7c3tsrdecZLupmAZDo'
@@ -131,12 +331,11 @@
 
         window.onload = async () => {
             if (localStorage.getItem('modo_oscuro') === 'true') document.body.classList.add('dark-mode');
-            
-            // Si ya hay sesión guardada, redirigir directo a la bitácora
             const { data: { session } } = await motorSupabase.auth.getSession();
             if (session) window.location.href = 'bitacora.html';
         };
 
+        // 2. FUNCIONES UI (Modo Oscuro & Modal)
         function toggleModoOscuro() {
             document.body.classList.toggle('dark-mode');
             localStorage.setItem('modo_oscuro', document.body.classList.contains('dark-mode'));
@@ -145,6 +344,47 @@
         function abrirModal() { document.getElementById('login-modal').style.display = 'flex'; }
         function cerrarModal() { document.getElementById('login-modal').style.display = 'none'; document.getElementById('auth-error').style.display = 'none'; }
 
+        // 3. LÓGICA DE SIMULADORES (EXPANSIÓN)
+        function abrirSimulador(idContenido, tarjetaHtml) {
+            // Apagar todo
+            document.querySelectorAll('.feature-card').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.sim-box').forEach(b => b.classList.remove('active'));
+            
+            // Encender el seleccionado
+            tarjetaHtml.classList.add('active');
+            document.getElementById(idContenido).classList.add('active');
+            
+            // Expandir el contenedor maestro y bajar un poco la pantalla
+            const contenedor = document.getElementById('simulator-container');
+            contenedor.classList.add('expanded');
+            
+            // Efecto de crecimiento de barras si es el gráfico
+            if(idContenido === 'sim-datos') {
+                const barras = document.querySelectorAll('.mock-bar');
+                barras.forEach(b => { let h = b.style.height; b.style.height = '0'; setTimeout(()=> b.style.height = h, 100); });
+            }
+
+            setTimeout(() => {
+                contenedor.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 300);
+        }
+
+        // 4. ANIMACIONES AL HACER SCROLL (Sticky Nav & CTA)
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('main-nav');
+            if (window.scrollY > 50) nav.classList.add('scrolled');
+            else nav.classList.remove('scrolled');
+
+            const ctaBtn = document.getElementById('btn-cta-bottom');
+            if(ctaBtn) {
+                const rect = ctaBtn.getBoundingClientRect();
+                if (rect.top < window.innerHeight - 50) {
+                    ctaBtn.classList.add('visible');
+                }
+            }
+        });
+
+        // 5. LOGIN
         async function procesarLogin() {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-pass').value;
@@ -152,16 +392,15 @@
             const errorMsg = document.getElementById('auth-error');
 
             if(!email || !password) return;
-            btn.disabled = true; btn.innerText = "Verificando..."; errorMsg.style.display = "none";
+            btn.disabled = true; btn.innerText = "Verificando en la bóveda..."; errorMsg.style.display = "none";
 
             const { error } = await motorSupabase.auth.signInWithPassword({ email, password });
 
             if (error) {
                 errorMsg.innerText = "Correo o contraseña incorrectos.";
                 errorMsg.style.display = "block";
-                btn.disabled = false; btn.innerText = "Entrar al Sistema";
+                btn.disabled = false; btn.innerText = "Entrar al Dashboard Seguro";
             } else {
-                // Login exitoso, el token se guardó en el navegador, viajamos a la app
                 window.location.href = 'bitacora.html';
             }
         }
