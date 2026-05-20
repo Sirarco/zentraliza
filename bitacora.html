@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zentraliza - App Operativa</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-body: #F8FAFC; --bg-card: #ffffff; --text-main: #1E293B; --text-muted: #64748b;
+            --border: #e2e8f0; --primary: #0D9488; --accent: #F59E0B; --danger: #ef4444;
+            --warning: #f59e0b; --success: #10b981; --kanban-bg: #f1f5f9;
+            --font-main: 'Inter', system-ui, sans-serif; --font-heading: 'Montserrat', sans-serif;
+        }
+
+        body.dark-mode {
+            --bg-body: #0F172A; --bg-card: #1e293b; --text-main: #F8FAFC; --text-muted: #94a3b8;
+            --border: #334155; --kanban-bg: #0b1121;
+        }
+
+        * { box-sizing: border-box; font-family: var(--font-main); }
+        /* El dashboard se mantiene ancho para no romper el Kanban */
+        body { margin: 0; padding: 20px; background-color: var(--bg-body); color: var(--text-main); min-width: 1200px; transition: 0.3s; }
+        h1, h2, h3 { font-family: var(--font-heading); margin-top: 0; }
+
+        /* UI GLOBAL */
+        .top-nav { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 15px 25px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .logo { font-family: var(--font-heading); font-size: 24px; font-weight: 900; letter-spacing: -1px; }
+        .logo span { color: var(--primary); }
+        .header-info { display: flex; align-items: center; gap: 15px; font-size: 14px; }
+        #current-date { color: var(--text-muted); font-weight: 500; text-transform: capitalize; }
+        
+        #realtime-badge { font-weight: 600; font-size: 12px; background: rgba(16, 185, 129, 0.1); padding: 6px 12px; border-radius: 20px; color: var(--success); border: 1px solid var(--success); display: flex; align-items: center; gap: 6px;}
+        .dot { width: 8px; height: 8px; background-color: var(--success); border-radius: 50%; animation: blink 2s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+        button { background-color: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.2s;}
+        button:hover { opacity: 0.9; }
+        button.outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-danger { background-color: transparent; color: var(--danger); border: 1px solid var(--danger); }
+        .btn-danger:hover { background-color: var(--danger); color: white; }
+        
+        input, select { padding: 10px; border: 1px solid var(--border); border-radius: 6px; background-color: var(--bg-body); color: var(--text-main); font-size: 14px; outline: none;}
+        input:focus, select:focus { border-color: var(--primary); }
+
+        /* GRID DASHBOARD */
+        .dashboard-grid { display: flex; flex-direction: column; gap: 20px; }
+        .top-modules { display: grid; grid-template-columns: 2.5fr 1.5fr; gap: 20px; }
+        .card { background: var(--bg-card); border-radius: 8px; padding: 20px; border: 1px solid var(--border); }
+        .card h2 { font-size: 20px; color: var(--primary); border-bottom: 2px solid var(--bg-body); padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center;}
+
+        /* ITEMS LIST (Bitácora & Tareas) */
+        .item-list { max-height: 350px; overflow-y: auto; padding-right: 10px; }
+        .item, .task-card { background: var(--bg-body); padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 14px; position: relative; border: 1px solid var(--border); border-left: 4px solid var(--primary);}
+        .item-meta { font-size: 12px; color: var(--text-muted); margin-top: 8px; display: flex; justify-content: space-between; font-weight: 500;}
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 700; color: white; display: inline-block; margin-bottom: 6px;}
+        .delete-btn { background: transparent; color: var(--text-muted); padding: 0; position: absolute; top: 10px; right: 10px; font-size: 18px; cursor: pointer; border: none; }
+        .delete-btn:hover { color: var(--danger); }
+        
+        .tareas-indef-box { background: rgba(245, 158, 11, 0.05); border: 1px solid var(--warning); padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .task-card.completada { opacity: 0.6; text-decoration: line-through; border-left-color: var(--success); }
+
+        /* KANBAN */
+        .kanban-board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; }
+        .kanban-col { background: var(--kanban-bg); padding: 10px; border-radius: 8px; min-height: 300px; border: 1px dashed var(--border); }
+        .kanban-col h3 { text-align: center; font-size: 14px; margin: 0 0 15px 0; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;}
+        .ejecutivo-card { background: var(--bg-card); border: 1px solid var(--border); padding: 8px; border-radius: 6px; margin-bottom: 8px; cursor: grab; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--text-muted); transition: 0.1s;}
+        .ejecutivo-card:active { transform: scale(0.95); opacity: 0.8; }
+        .ejecutivo-card strong { font-size: 14px; font-weight: 600; pointer-events: none;}
+        .ejecutivo-card select { padding: 4px; font-size: 12px; width: 80px; }
+        
+        #btn-consolidar { background-color: var(--text-muted); color: white; transition: all 0.3s; font-size: 14px; }
+        #btn-consolidar.active { background-color: var(--accent); color: #1E293B; animation: pulse 1.5s infinite; transform: scale(1.02); }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); } 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); } }
+        
+        #toast-sync { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white; padding: 12px 24px; border-radius: 8px; display: none; z-index: 1000; font-weight: 600; font-size: 14px;}
+        #app-loader { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg-body); z-index: 9999; display: flex; justify-content: center; align-items: center; font-family: var(--font-heading); font-size: 24px;}
+    </style>
+</head>
+<body>
+
+    <div id="app-loader">Verificando credenciales...</div>
+    <div id="toast-sync">🔄 Sincronizando datos...</div>
+
+    <div class="top-nav">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div class="logo">Zentraliza<span>.</span></div>
+            <div class="header-info">
+                <span id="current-date"></span>
+                <span id="realtime-badge"><span class="dot"></span> Tiempo Real Activo</span>
+            </div>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <div style="font-size: 14px; font-weight: 600; color: var(--text-muted); margin-right: 15px;" id="user-display-name">...</div>
+            <button class="outline" onclick="toggleModoOscuro()">🌙</button>
+            <button class="btn-danger" onclick="cerrarSesion()">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="top-modules">
+            <div class="card">
+                <h2>Bitácora de Novedades</h2>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <select id="bit-tipo" style="width: 25%;">
+                        <option value="Incidencia">🚨 Incidencia</option>
+                        <option value="Situación">👤 Situación</option>
+                        <option value="Instrucción">📋 Instrucción</option>
+                    </select>
+                    <input type="text" id="bit-texto" placeholder="Detalle de la novedad..." style="width: 60%;" onkeyup="if(event.key === 'Enter') guardarBitacora()">
+                    <button onclick="guardarBitacora()" style="width: 15%;">Registrar</button>
+                </div>
+                <div class="item-list" id="contenedor-bitacora"></div>
+            </div>
+
+            <div>
+                <div class="tareas-indef-box" id="box-indefinidas" style="display:none;">
+                    <h3>📌 Tareas Indefinidas (Fijas)</h3>
+                    <div id="contenedor-tareas-indefinidas"></div>
+                </div>
+                <div class="card">
+                    <h2>Gestión de Tareas</h2>
+                    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+                        <input type="text" id="tarea-titulo" placeholder="Título de la tarea..." style="font-weight: 600;">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <select id="tarea-cat" style="width: 30%;">
+                                <option value="General">General</option><option value="Bloqueo">Bloqueo</option>
+                                <option value="Mesa Central">Mesa Central</option><option value="Ingresos">Ingresos</option>
+                            </select>
+                            <select id="tarea-urgencia" style="width: 25%;">
+                                <option value="Baja">Urg. Baja</option><option value="Media">Urg. Media</option><option value="Alta">Urg. Alta</option>
+                            </select>
+                            <input type="date" id="tarea-hasta" style="width: 25%;">
+                            <label style="font-size: 12px; display:flex; align-items:center; gap:5px; font-weight:500;"><input type="checkbox" id="tarea-indefinida" onchange="document.getElementById('tarea-hasta').disabled = this.checked"> Indefinida</label>
+                        </div>
+                        <button onclick="guardarTarea()">Añadir Tarea</button>
+                    </div>
+                    <div class="item-list" id="contenedor-tareas" style="max-height: 200px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 50px;">
+            <h2>Asignación Operativa <button id="btn-consolidar" onclick="consolidarAsistencia()">💾 Consolidar Asistencia</button></h2>
+            <div class="kanban-board">
+                <div class="kanban-col" ondragover="allowDrop(event)" ondrop="drop(event, 'Mesa Central')">
+                    <h3>Mesa Central</h3><div class="kanban-items" id="col-Mesa-Central"></div>
+                </div>
+                <div class="kanban-col" ondragover="allowDrop(event)" ondrop="drop(event, 'Ingresos')">
+                    <h3>Ingresos</h3><div class="kanban-items" id="col-Ingresos"></div>
+                </div>
+                <div class="kanban-col" ondragover="allowDrop(event)" ondrop="drop(event, 'Bloqueo')">
+                    <h3>Bloqueo</h3><div class="kanban-items" id="col-Bloqueo"></div>
+                </div>
+                <div class="kanban-col" ondragover="allowDrop(event)" ondrop="drop(event, 'CallBack')">
+                    <h3>CallBack</h3><div class="kanban-items" id="col-CallBack"></div>
+                </div>
+                <div class="kanban-col" ondragover="allowDrop(event)" ondrop="drop(event, 'WhatsApp')">
+                    <h3>WhatsApp</h3><div class="kanban-items" id="col-WhatsApp"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const motorSupabase = window.supabase.createClient(
+            'https://lxjavcebbewkngtubkvc.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4amF2Y2ViYmV3a25ndHVia3ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjMzMzYsImV4cCI6MjA5NDc5OTMzNn0.FD3H_L2jtBx4Ok4CrXbxI78Uh7c3tsrdecZLupmAZDo'
+        );
+        
+        let nombreAdminActivo = ""; 
+        let dbData = { bitacora: [], asistencia: [], tareas: [], usuarios: [] };
+        let hayCambiosSinGuardar = false;
+
+        const serviciosPorDefecto = {
+            'Andreina Villalon': 'Bloqueo', 'Oscar Hidalgo': 'Bloqueo', 'Lorena Rodriguez': 'Bloqueo',
+            'Miriam Bruges': 'Ingresos', 'Cristobal Fernandez': 'Ingresos', 'Carla Garay': 'Ingresos', 'Jorge Yanez': 'Ingresos', 'Maria Paz Nuñez': 'Ingresos',
+            'Diego Cea': 'Mesa Central', 'Edith Ossandon': 'Mesa Central', 'Johanna Herrera': 'Mesa Central', 'Lesli Agudelo': 'Mesa Central',
+            'Cristina Barón': 'Mesa Central', 'Valentina Gonzalez': 'Mesa Central', 'Paola Herrera': 'Mesa Central', 'Adrian Manzanilla': 'Mesa Central', 'María Faría': 'Mesa Central'
+        };
+
+        window.onload = async () => {
+            if (localStorage.getItem('modo_oscuro') === 'true') document.body.classList.add('dark-mode');
+            document.getElementById('current-date').innerText = new Date().toLocaleDateString('es-CL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+            // Verificar Autorización
+            const { data: { session } } = await motorSupabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'index.html'; // Expulsar si no hay sesión
+                return;
+            }
+            
+            nombreAdminActivo = session.user.email.split('@')[0];
+            document.getElementById('user-display-name').innerText = nombreAdminActivo;
+            document.getElementById('app-loader').style.display = 'none';
+
+            cargarDatosIniciales();
+            motorSupabase.channel('custom-all-channel').on('postgres_changes', { event: '*', schema: 'public' }, () => {
+                if (!hayCambiosSinGuardar) { mostrarToast("🔄 Base de datos sincronizada"); cargarDatosIniciales(); }
+            }).subscribe();
+        };
+
+        function toggleModoOscuro() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('modo_oscuro', document.body.classList.contains('dark-mode'));
+        }
+
+        async function cerrarSesion() {
+            await motorSupabase.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        async function cargarDatosIniciales() {
+            const [bit, asi, tar, usu] = await Promise.all([
+                motorSupabase.from('bitacora').select('*').eq('estado_borrado', false).order('id', { ascending: false }),
+                motorSupabase.from('asistencia').select('*').order('id', { ascending: false }),
+                motorSupabase.from('tareas').select('*').eq('estado_borrado', false).order('id', { ascending: false }),
+                motorSupabase.from('usuarios').select('*').eq('estado', 'Activo')
+            ]);
+            dbData.bitacora = bit.data || []; dbData.asistencia = asi.data || []; dbData.tareas = tar.data || []; dbData.usuarios = usu.data || [];
+            renderKanban(); renderBitacora(); renderTareas();
+        }
+
+        function mostrarToast(msg) { const t = document.getElementById('toast-sync'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2500); }
+        function obtenerFecha() { const now = new Date(); return `${now.toLocaleDateString('es-CL')} ${now.toLocaleTimeString('es-CL', {hour: '2-digit', minute:'2-digit'})}`; }
+        function generarIdSeguro() { return Math.floor(Math.random() * 900000000) + 100000000; }
+
+        /* --- BITÁCORA --- */
+        async function guardarBitacora() {
+            const txt = document.getElementById('bit-texto').value.trim(); const tipo = document.getElementById('bit-tipo').value;
+            if (!txt) return; document.getElementById('bit-texto').value = '';
+            const n = { id: generarIdSeguro(), fecha_hora: obtenerFecha(), autor: nombreAdminActivo, tipo_mensaje: tipo, mensaje: txt, estado_borrado: false };
+            const { error } = await motorSupabase.from('bitacora').insert([n]);
+            if (!error) { dbData.bitacora.unshift(n); renderBitacora(); }
+        }
+
+        function renderBitacora() {
+            const c = document.getElementById('contenedor-bitacora'); c.innerHTML = '';
+            dbData.bitacora.slice(0, 40).forEach(i => {
+                let col = i.tipo_mensaje === 'Incidencia' ? 'var(--danger)' : (i.tipo_mensaje === 'Situación' ? 'var(--warning)' : 'var(--primary)');
+                c.innerHTML += `<div class="item" style="border-left-color: ${col}"><button class="delete-btn" onclick="borrarRegistro('bitacora', '${i.id}')">×</button><span class="badge" style="background-color: ${col}; color: ${i.tipo_mensaje === 'Situación' ? '#1E293B': '#fff'}">${i.tipo_mensaje}</span><div style="margin-top:8px; line-height: 1.4;">${i.mensaje}</div><div class="item-meta"><span>Por: ${i.autor}</span><span>${i.fecha_hora}</span></div></div>`;
+            });
+        }
+
+        /* --- TAREAS --- */
+        async function guardarTarea() {
+            const tit = document.getElementById('tarea-titulo').value.trim(); if (!tit) return;
+            const isInd = document.getElementById('tarea-indefinida').checked;
+            const n = { id: generarIdSeguro(), fecha_hora: obtenerFecha(), autor: nombreAdminActivo, categoria_tag: document.getElementById('tarea-cat').value, color: '#0D9488', titulo: tit, urgencia: document.getElementById('tarea-urgencia').value, hasta: isInd ? 'Indefinida' : document.getElementById('tarea-hasta').value || 'Sin fecha', estado: 'Pendiente', estado_borrado: false };
+            document.getElementById('tarea-titulo').value = '';
+            const { error } = await motorSupabase.from('tareas').insert([n]);
+            if (!error) { dbData.tareas.unshift(n); renderTareas(); }
+        }
+
+        async function cambiarEstadoTarea(id, chk) {
+            await motorSupabase.from('tareas').update({ estado: chk ? 'Completada' : 'Pendiente' }).eq('id', id);
+            let t = dbData.tareas.find(x => x.id == id); if(t) t.estado = chk ? 'Completada' : 'Pendiente'; renderTareas();
+        }
+
+        function renderTareas() {
+            const cn = document.getElementById('contenedor-tareas'); const ci = document.getElementById('contenedor-tareas-indefinidas');
+            cn.innerHTML = ''; ci.innerHTML = ''; let hasInd = false;
+            dbData.tareas.forEach(t => {
+                const html = `<div class="task-card ${t.estado === 'Completada' ? 'completada' : ''}">
+                    <div style="display:flex; justify-content:space-between; align-items: center;">
+                        <div><div><span class="badge" style="background-color: var(--primary)">${t.categoria_tag}</span> <span class="badge ${t.urgencia ? t.urgencia.toLowerCase() : ''}">${t.urgencia || ''}</span> <span style="font-size:12px; color:var(--text-muted); margin-left:5px;">Hasta: ${t.hasta}</span></div>
+                        <div style="font-size:14px; font-weight: 600; margin-top:6px;"><input type="checkbox" ${t.estado === 'Completada' ? 'checked' : ''} onchange="cambiarEstadoTarea('${t.id}', this.checked)"> ${t.titulo}</div></div>
+                        <button class="delete-btn" style="position:static;" onclick="borrarRegistro('tareas', '${t.id}')">×</button></div></div>`;
+                if (t.hasta === 'Indefinida') { ci.innerHTML += html; hasInd = true; } else { cn.innerHTML += html; }
+            });
+            document.getElementById('box-indefinidas').style.display = hasInd ? 'block' : 'none';
+        }
+
+        async function borrarRegistro(tabla, id) {
+            if (!confirm('¿Eliminar?')) return;
+            if (!(await motorSupabase.from(tabla).update({ estado_borrado: true }).eq('id', id)).error) {
+                dbData[tabla] = dbData[tabla].filter(x => x.id != id); renderKanban(); renderBitacora(); renderTareas();
+            }
+        }
+
+        /* --- KANBAN --- */
+        function renderKanban() {
+            if(hayCambiosSinGuardar) return; 
+            document.querySelectorAll('.kanban-items').forEach(el => el.innerHTML = '');
+            const hoy = new Date().toLocaleDateString('es-CL');
+            dbData.usuarios.filter(u => u.rol === 'Ejecutivo').forEach(ej => {
+                let reg = dbData.asistencia.filter(a => a.nombre_ejecutivo === ej.nombre && a.fecha.includes(hoy));
+                let serv = reg.length ? reg[0].grupo : (serviciosPorDefecto[ej.nombre] || 'Mesa Central');
+                let est = reg.length ? reg[0].estado : 'Presente';
+                let col = document.getElementById(`col-${serv.replace(/ /g, '-')}`) || document.getElementById('col-Mesa-Central');
+                
+                col.innerHTML += `<div class="ejecutivo-card" style="border-left-color: var(--${est === 'Ausente' ? 'danger' : (est === 'Licencia' ? 'warning' : 'success')})" draggable="true" ondragstart="drag(event, '${ej.nombre}')" id="card-${ej.nombre.replace(/\s/g, '')}" data-nombre="${ej.nombre}">
+                        <strong>${ej.nombre.split(' ')[0]}</strong>
+                        <select onchange="marcarCambioLocal(this)">
+                            <option value="Presente" ${est === 'Presente' ? 'selected' : ''}>Pres.</option>
+                            <option value="Ausente" ${est === 'Ausente' ? 'selected' : ''}>Aus.</option>
+                            <option value="Licencia" ${est === 'Licencia' ? 'selected' : ''}>Lic.</option>
+                        </select></div>`;
+            });
+        }
+
+        function drag(ev, nom) { ev.dataTransfer.setData("nombre", nom); }
+        function allowDrop(ev) { ev.preventDefault(); }
+        function drop(ev, serv) {
+            ev.preventDefault();
+            document.getElementById(`col-${serv.replace(/ /g, '-')}`).appendChild(document.getElementById(`card-${ev.dataTransfer.getData("nombre").replace(/\s/g, '')}`));
+            activarBotonConsolidar();
+        }
+        function marcarCambioLocal(sel) { 
+            let v = sel.value; sel.parentElement.style.borderLeftColor = `var(--${v === 'Ausente' ? 'danger' : (v === 'Licencia' ? 'warning' : 'success')})`; 
+            activarBotonConsolidar(); 
+        }
+        function activarBotonConsolidar() { hayCambiosSinGuardar = true; const b = document.getElementById('btn-consolidar'); b.classList.add('active'); b.innerText = '⚠️ Guardar Asistencia'; }
+
+        async function consolidarAsistencia() {
+            const b = document.getElementById('btn-consolidar'); b.innerText = 'Guardando...'; b.classList.remove('active');
+            let datos = []; let base = generarIdSeguro(); let f = obtenerFecha(); let idx = 0;
+            document.querySelectorAll('.kanban-col').forEach(col => {
+                let s = col.querySelector('h3').innerText;
+                col.querySelectorAll('.ejecutivo-card').forEach(c => {
+                    datos.push({ id: base + idx++, fecha: f, autor_registro: nombreAdminActivo, nombre_ejecutivo: c.getAttribute('data-nombre'), grupo: s, estado: c.querySelector('select').value });
+                });
+            });
+            if (!(await motorSupabase.from('asistencia').insert(datos)).error) { 
+                hayCambiosSinGuardar = false; b.innerText = '✔️ Guardado'; setTimeout(() => b.innerText = '💾 Consolidar Asistencia', 3000); cargarDatosIniciales(); 
+            }
+        }
+    </script>
+</body>
+</html>

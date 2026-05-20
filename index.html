@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zentraliza - Soluciones de Productividad</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-body: #F8FAFC; --bg-card: #ffffff; --text-main: #1E293B; --text-muted: #64748b;
+            --border: #e2e8f0; --primary: #0D9488; --accent: #F59E0B; --danger: #ef4444;
+            --font-main: 'Inter', system-ui, sans-serif; --font-heading: 'Montserrat', sans-serif;
+        }
+
+        body.dark-mode {
+            --bg-body: #0F172A; --bg-card: #1e293b; --text-main: #F8FAFC; --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        * { box-sizing: border-box; font-family: var(--font-main); }
+        body { margin: 0; padding: 0; background-color: var(--bg-body); color: var(--text-main); transition: background-color 0.3s, color 0.3s; }
+        h1, h2, h3 { font-family: var(--font-heading); margin-top: 0; }
+
+        /* NAVBAR */
+        .landing-nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; background: var(--bg-card); box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .logo { font-family: var(--font-heading); font-size: 28px; font-weight: 900; color: var(--text-main); letter-spacing: -1px; }
+        .logo span { color: var(--primary); }
+        
+        .nav-actions { display: flex; gap: 15px; align-items: center; }
+        button { font-family: var(--font-main); cursor: pointer; transition: all 0.3s ease; border-radius: 8px; font-weight: 600; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); padding: 10px 15px; }
+        .btn-primary { background: var(--accent); color: #1E293B; border: none; padding: 12px 24px; }
+        .btn-primary:hover { background: #d97706; transform: translateY(-2px); }
+
+        /* HERO */
+        .hero { background: linear-gradient(135deg, #0F172A 0%, #1e293b 100%); color: #F8FAFC; text-align: center; padding: 100px 20px; }
+        .hero h1 { font-size: 4rem; font-weight: 800; margin: 0 0 20px 0; letter-spacing: -1.5px; line-height: 1.1; }
+        .hero h1 span { color: var(--primary); }
+        .hero p { font-size: 1.1rem; color: #94a3b8; max-width: 700px; margin: 0 auto 40px auto; line-height: 1.6; }
+
+        /* FEATURES */
+        .features-wrapper { padding: 80px 20px; text-align: center; }
+        .features { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; max-width: 1200px; margin: 0 auto; }
+        .feature-card { background: var(--bg-card); padding: 40px 30px; border-radius: 12px; border: 1px solid var(--border); width: 100%; max-width: 350px; transition: transform 0.3s; }
+        .feature-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .feature-card .icon { font-size: 40px; margin-bottom: 20px; }
+        .feature-card p { color: var(--text-muted); line-height: 1.6; }
+
+        /* MODAL */
+        #login-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(8px); }
+        .login-box { background: var(--bg-card); padding: 50px 40px; border-radius: 12px; text-align: center; width: 90%; max-width: 420px; position: relative; border: 1px solid var(--border); }
+        
+        /* FIX DE LA X PARA CERRAR */
+        .close-btn { position: absolute; top: 15px; right: 15px; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; color: var(--text-muted); border: none; background: transparent; border-radius: 50%; line-height: 1; }
+        .close-btn:hover { color: var(--danger); background: rgba(239, 68, 68, 0.1); }
+        
+        .login-box input { width: 100%; padding: 14px; margin: 8px 0 24px 0; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-body); color: var(--text-main); font-size: 16px; outline: none; }
+        .login-box input:focus { border-color: var(--primary); }
+        .btn-full { width: 100%; padding: 14px; font-size: 16px; background: var(--primary); color: white; border: none; }
+        .btn-full:hover { background: #0f766e; }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .landing-nav { flex-direction: column; gap: 15px; padding: 20px; }
+            .hero { padding: 60px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="landing-nav">
+        <div class="logo">Zentraliza<span>.</span></div>
+        <div class="nav-actions">
+            <button class="btn-outline" onclick="toggleModoOscuro()">🌙</button>
+            <button class="btn-outline" onclick="abrirModal()">Acceso Admin</button>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <h1>Todo en un <span>solo lugar</span>.</h1>
+        <p>Empresa líder en desarrollo de aplicaciones de productividad, análisis de datos profundos y dashboards de control operativo para equipos de alto rendimiento.</p>
+        <button class="btn-primary" onclick="abrirModal()">Ingresar a la Plataforma</button>
+    </header>
+
+    <section class="features-wrapper">
+        <h2 style="font-size: 2rem; margin-bottom: 40px;">Nuestras Soluciones</h2>
+        <div class="features">
+            <div class="feature-card">
+                <div class="icon">📈</div>
+                <h3>Análisis de Datos</h3>
+                <p>Transformamos la información dispersa de tu empresa en métricas claras, precisas y accionables en tiempo real.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">⚡</div>
+                <h3>Apps a Medida</h3>
+                <p>Desarrollo de software diseñado para eliminar cuellos de botella y acelerar los flujos de trabajo operativos.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">📊</div>
+                <h3>Control Operativo</h3>
+                <p>Dashboards dinámicos, gestión visual mediante Kanban y bitácoras inteligentes protegidas en la nube.</p>
+            </div>
+        </div>
+    </section>
+
+    <div id="login-modal">
+        <div class="login-box">
+            <button class="close-btn" onclick="cerrarModal()">×</button>
+            <h2>Iniciar Sesión</h2>
+            <p style="color:var(--text-muted); margin-bottom: 30px;">Ingresa tus credenciales corporativas.</p>
+            
+            <div style="text-align: left; font-weight: 600; font-size: 14px;">Correo Electrónico</div>
+            <input type="email" id="auth-email" placeholder="admin@zentraliza.com">
+            
+            <div style="text-align: left; font-weight: 600; font-size: 14px;">Contraseña</div>
+            <input type="password" id="auth-pass" placeholder="••••••••" onkeyup="if(event.key === 'Enter') procesarLogin()">
+            
+            <button id="btn-login" class="btn-full" onclick="procesarLogin()">Entrar al Sistema</button>
+            <p id="auth-error" style="color: var(--danger); font-size: 14px; display: none; margin-top: 15px; font-weight: 500;">Credenciales incorrectas.</p>
+        </div>
+    </div>
+
+    <script>
+        const motorSupabase = window.supabase.createClient(
+            'https://lxjavcebbewkngtubkvc.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4amF2Y2ViYmV3a25ndHVia3ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMjMzMzYsImV4cCI6MjA5NDc5OTMzNn0.FD3H_L2jtBx4Ok4CrXbxI78Uh7c3tsrdecZLupmAZDo'
+        );
+
+        window.onload = async () => {
+            if (localStorage.getItem('modo_oscuro') === 'true') document.body.classList.add('dark-mode');
+            
+            // Si ya hay sesión guardada, redirigir directo a la bitácora
+            const { data: { session } } = await motorSupabase.auth.getSession();
+            if (session) window.location.href = 'bitacora.html';
+        };
+
+        function toggleModoOscuro() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('modo_oscuro', document.body.classList.contains('dark-mode'));
+        }
+
+        function abrirModal() { document.getElementById('login-modal').style.display = 'flex'; }
+        function cerrarModal() { document.getElementById('login-modal').style.display = 'none'; document.getElementById('auth-error').style.display = 'none'; }
+
+        async function procesarLogin() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-pass').value;
+            const btn = document.getElementById('btn-login');
+            const errorMsg = document.getElementById('auth-error');
+
+            if(!email || !password) return;
+            btn.disabled = true; btn.innerText = "Verificando..."; errorMsg.style.display = "none";
+
+            const { error } = await motorSupabase.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                errorMsg.innerText = "Correo o contraseña incorrectos.";
+                errorMsg.style.display = "block";
+                btn.disabled = false; btn.innerText = "Entrar al Sistema";
+            } else {
+                // Login exitoso, el token se guardó en el navegador, viajamos a la app
+                window.location.href = 'bitacora.html';
+            }
+        }
+    </script>
+</body>
+</html>
